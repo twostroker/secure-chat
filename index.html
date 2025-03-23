@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Secure Chat</h1>
+        
+        <div class="info-box">
+            <h2>Privacy Features</h2>
+            <ul>
+                <li>Only 2 people per room</li>
+                <li>Messages expire after 3 minutes</li>
+                <li>No message storage</li>
+                <li>Passcode protection</li>
+                <li>Anti-screenshot measures</li>
+            </ul>
+        </div>
+        
+        <div class="button-container">
+            <button id="create-btn">Create Room</button>
+            <button id="join-btn">Join Room</button>
+        </div>
+        
+        <div id="create-form" class="form-container">
+            <h2>Create a New Room</h2>
+            <input type="text" id="create-name" placeholder="Your Name" required>
+            <input type="text" id="create-room" placeholder="Room Name" required>
+            <input type="password" id="create-pass" placeholder="Room Passcode" required>
+            <button id="create-submit">Create Room</button>
+        </div>
+        
+        <div id="join-form" class="form-container">
+            <h2>Join Existing Room</h2>
+            <input type="text" id="join-name" placeholder="Your Name" required>
+            <input type="text" id="join-room" placeholder="Room Name" required>
+            <input type="password" id="join-pass" placeholder="Room Passcode" required>
+            <button id="join-submit">Join Room</button>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

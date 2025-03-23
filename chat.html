@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat Room</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="room-info">
+                <h2 id="room-name">Room: Loading...</h2>
+                <div class="privacy-notice">Messages auto-delete after 3 minutes</div>
+            </div>
+            <button id="cancel-btn">End Chat</button>
+        </div>
+        
+        <div id="security-alert" class="security-alert">
+            Screenshot detected! This app is for private communication.
+        </div>
+        
+        <div id="message-container" class="message-container"></div>
+        
+        <div class="chat-input">
+            <div class="media-buttons">
+                <button id="image-btn" class="media-btn">📷</button>
+                <button id="video-btn" class="media-btn">🎥</button>
+                <input type="file" id="file-input" accept="image/*,video/*" style="display:none">
+            </div>
+            <div id="preview-container" class="preview-container"></div>
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
