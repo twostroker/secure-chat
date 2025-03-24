@@ -17,10 +17,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-// Initialize Realtime Database
-const database = getDatabase(app);
+// Make database available globally
+window.db = database;
 
 // Export Firebase services for use in other files
 export { database, ref, set, push, onChildAdded, onChildRemoved, serverTimestamp };

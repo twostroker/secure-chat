@@ -1,8 +1,4 @@
-// chat.js
-
-import { database, ref, set, push, onChildAdded, onChildRemoved, serverTimestamp } from './firebase.js';
-
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Get user data from session storage
     const username = sessionStorage.getItem('chat_name');
     const roomName = sessionStorage.getItem('chat_room');
@@ -17,11 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Update room name display
-    document.getElementById('room-name').textContent = `Room: ${roomName}`;
+    document.getElementById('room-name').textContent = 'Room: ' + roomName;
 
     // Firebase references
-    const roomRef = ref(database, `rooms/${roomName}`);
-    const messagesRef = ref(database, `messages/${roomName}`);
+    const roomRef = db.ref('rooms/' + roomName);
+    const messagesRef = db.ref('messages/' + roomName);
 
     // UI Elements
     const messageContainer = document.getElementById('message-container');
@@ -38,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let messageDeleteTimers = {};
 
     // Check if room exists
-    onChildAdded(roomRef, (snapshot) => {
+    roomRef.on('value', function(snapshot) {
         if (!snapshot.exists()) {
             alert('Room does not exist. Redirecting to home page.');
             window.location.href = 'index.html';
@@ -46,13 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Add user disconnect handler
-    onDisconnect(roomRef).update({
-        participants: serverTimestamp.increment(-1)
-    });
-
     // Listen for messages
-    onChildAdded(messagesRef, (snapshot) => {
+    messagesRef.on('child_added', function(snapshot) {
         const message = snapshot.val();
         const messageId = snapshot.key;
 
@@ -64,9 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Listen for message deletions
-    onChildRemoved(messagesRef, (snapshot) => {
+    messagesRef.on('child_removed', function(snapshot) {
         const messageId = snapshot.key;
-        const messageElement = document.getElementById(`message-${messageId}`);
+        const messageElement = document.getElementById('message-' + messageId);
         if (messageElement) {
             messageElement.remove();
         }
@@ -82,26 +73,26 @@ document.addEventListener('DOMContentLoaded', function () {
     sendBtn.addEventListener('click', sendMessage);
 
     // Enter key press handler
-    messageInput.addEventListener('keypress', function (e) {
+    messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
 
     // Image button click handler
-    imageBtn.addEventListener('click', function () {
+    imageBtn.addEventListener('click', function() {
         fileInput.setAttribute('accept', 'image/*');
         fileInput.click();
     });
 
     // Video button click handler
-    videoBtn.addEventListener('click', function () {
+    videoBtn.addEventListener('click', function() {
         fileInput.setAttribute('accept', 'video/*');
         fileInput.click();
     });
 
     // File selection handler
-    fileInput.addEventListener('change', function (e) {
+    fileInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 
@@ -119,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewContainer.style.display = 'block';
 
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 if (selectedFileType === 'image') {
                     const img = document.createElement('img');
                     img.src = e.target.result;
@@ -139,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const clearBtn = document.createElement('button');
                 clearBtn.className = 'clear-preview';
                 clearBtn.innerHTML = '×';
-                clearBtn.addEventListener('click', function (e) {
+                clearBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     clearPreview();
                 });
@@ -150,19 +141,25 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Cancel button click handler
-    cancelBtn.addEventListener('click', function () {
+    cancelBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to end this chat? All messages will be deleted.')) {
             // Send system message
-            push(messagesRef, {
+            messagesRef.push({
                 type: 'system',
                 text: 'Chat room has been closed',
-                timestamp: serverTimestamp()
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             });
 
             // Delete room and messages after short delay
-            setTimeout(() => {
-                set(messagesRef, null);
-                set(roomRef, null);
+            setTimeout(function() {
+                messagesRef.remove();
+                roomRef.remove();
+
+                // Clear session storage
+                sessionStorage.removeItem('chat_name');
+                sessionStorage.removeItem('chat_room');
+                sessionStorage.removeItem('chat_pass');
+                sessionStorage.removeItem('chat_isCreator');
 
                 // Redirect to home page
                 window.location.href = 'index.html';
@@ -171,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Anti-screenshot detection
-    document.addEventListener('keydown', function (e) {
+    document.addEventListener('keydown', function(e) {
         // Detect common screenshot key combinations
         if (e.key === 'PrintScreen' ||
             (e.ctrlKey && e.key === 'p') ||
@@ -188,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showSecurityAlert() {
         const alert = document.getElementById('security-alert');
         alert.style.display = 'block';
-        setTimeout(() => {
+        setTimeout(function() {
             alert.style.display = 'none';
         }, 3000);
     }
@@ -209,10 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'text',
                 text: messageText,
                 sender: username,
-                timestamp: serverTimestamp()
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             };
 
-            push(messagesRef, message);
+            messagesRef.push(message);
             messageInput.value = '';
         }
     }
@@ -220,15 +217,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Send file message function
     function sendFileMessage() {
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = function(e) {
             const message = {
                 type: selectedFileType,
                 text: e.target.result,
                 sender: username,
-                timestamp: serverTimestamp()
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             };
 
-            push(messagesRef, message);
+            messagesRef.push(message);
             messageInput.value = '';
             clearPreview();
         };
@@ -241,12 +238,13 @@ document.addEventListener('DOMContentLoaded', function () {
         previewContainer.style.display = 'none';
         selectedFile = null;
         selectedFileType = null;
+        fileInput.value = '';
     }
 
     // Display message function
     function displayMessage(message, messageId) {
         const messageDiv = document.createElement('div');
-        messageDiv.id = `message-${messageId}`;
+        messageDiv.id = 'message-' + messageId;
         messageDiv.classList.add('message');
         messageDiv.classList.add('expiring');
 
@@ -295,17 +293,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Schedule message deletion (3 minutes)
     function scheduleMessageDeletion(messageId) {
-        const timer = setTimeout(() => {
-            set(ref(database, `messages/${roomName}/${messageId}`), null);
+        const timer = setTimeout(function() {
+            db.ref('messages/' + roomName + '/' + messageId).remove();
         }, 3 * 60 * 1000); // 3 minutes
 
         messageDeleteTimers[messageId] = timer;
     }
 
     // Handle page leave/refresh
-    window.addEventListener('beforeunload', function (e) {
-        set(roomRef, {
-            participants: serverTimestamp.increment(-1)
+    window.addEventListener('beforeunload', function(e) {
+        roomRef.update({
+            participants: firebase.database.ServerValue.increment(-1)
         });
 
         // Show confirmation message

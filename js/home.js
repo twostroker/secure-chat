@@ -31,8 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Check if room exists
-        const roomRef = database.ref(`rooms/${room}`);
-        roomRef.once('value').then((snapshot) => {
+        const roomRef = db.ref('rooms/' + room);
+        roomRef.once('value').then(function(snapshot) {
             if (snapshot.exists()) {
                 alert('Room name already exists. Please choose another name.');
                 return;
@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create new room
             roomRef.set({
                 passcode: pass,
-                createdAt: Date.now(),
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
                 participants: 1,
                 creator: name
-            }).then(() => {
+            }).then(function() {
                 // Store user info in session storage
                 sessionStorage.setItem('chat_name', name);
                 sessionStorage.setItem('chat_room', room);
@@ -52,10 +52,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 sessionStorage.setItem('chat_isCreator', 'true');
                 
                 // Redirect to chat room
-                window.location.href = `chat.html?room=${room}`;
-            }).catch((error) => {
+                window.location.href = 'chat.html?room=' + encodeURIComponent(room);
+            }).catch(function(error) {
+                console.error('Error creating room:', error);
                 alert('Error creating room: ' + error.message);
             });
+        }).catch(function(error) {
+            console.error('Error checking room:', error);
+            alert('Error checking room: ' + error.message);
         });
     });
     
@@ -71,8 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Check if room exists and verify passcode
-        const roomRef = database.ref(`rooms/${room}`);
-        roomRef.once('value').then((snapshot) => {
+        const roomRef = db.ref('rooms/' + room);
+        roomRef.once('value').then(function(snapshot) {
             if (!snapshot.exists()) {
                 alert('Room does not exist');
                 return;
@@ -95,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Increment participant count
             roomRef.update({
                 participants: roomData.participants + 1
-            }).then(() => {
+            }).then(function() {
                 // Store user info in session storage
                 sessionStorage.setItem('chat_name', name);
                 sessionStorage.setItem('chat_room', room);
@@ -103,10 +107,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 sessionStorage.setItem('chat_isCreator', 'false');
                 
                 // Redirect to chat room
-                window.location.href = `chat.html?room=${room}`;
-            }).catch((error) => {
+                window.location.href = 'chat.html?room=' + encodeURIComponent(room);
+            }).catch(function(error) {
+                console.error('Error joining room:', error);
                 alert('Error joining room: ' + error.message);
             });
+        }).catch(function(error) {
+            console.error('Error checking room:', error);
+            alert('Error checking room: ' + error.message);
         });
     });
 });
