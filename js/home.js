@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Increment participant count
             roomRef.update({
-                participants: roomData.participants + 1
+                participants: firebase.database.ServerValue.increment(1)
             }).then(function() {
                 // Store user info in session storage
                 sessionStorage.setItem('chat_name', name);

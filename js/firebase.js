@@ -22,6 +22,7 @@ const database = firebase.database();
 
 // Make database available globally
 window.db = database;
+window.firebase = firebase;
 
 // Export Firebase services for use in other files
 export { database, ref, set, push, onChildAdded, onChildRemoved, serverTimestamp };
